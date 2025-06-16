@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="001-event-message" author="abhi">
+        <createTable tableName="event_message">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_event_message"/>
+            </column>
+            <column name="event_id" type="BIGINT"/>
+            <column name="type" type="VARCHAR(255)"/>
+            <column name="category" type="VARCHAR(255)"/>
+            <column name="data_schema" type="VARCHAR(255)"/>
+            <column name="tenant_id" type="VARCHAR(255)"/>
+            <column name="created_at" type="DATETIME"/>
+            <column name="payload" type="BYTEA"/>
+            <column name="business_date" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,76 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.4.5'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'microservice.loanrisk'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '21'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+repositories {
+	mavenLocal()
+	mavenCentral()
+	maven {
+		url "https://mifos.jfrog.io/artifactory/libs-release-local"
+	}
+}
+
+ext {
+	set('springCloudVersion', "2024.0.1")
+}
+
+ext.fineractVersion = '1.12.0-SNAPSHOT-SNAPSHOT'
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+	implementation 'org.springframework.cloud:spring-cloud-stream'
+	implementation 'org.springframework.boot:spring-boot-starter-integration'
+	implementation group: 'org.apache.avro', name: 'avro', version: '1.12.0'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.apache.kafka:kafka-clients:4.0.0'
+	implementation 'org.springframework.kafka:spring-kafka'
+	implementation 'org.springframework.integration:spring-integration-kafka'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation "org.apache.kafka:kafka-clients:3.9.0"
+	implementation "org.liquibase:liquibase-core"
+	implementation "org.springframework.boot:spring-boot-starter-jdbc"
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	compileOnly 'org.projectlombok:lombok'
+	runtimeOnly 'com.h2database:h2'
+	runtimeOnly    "org.postgresql:r2dbc-postgresql:1.0.4.RELEASE"
+	runtimeOnly    "org.postgresql:postgresql:42.7.2"
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.integration:spring-integration-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'io.projectreactor:reactor-test'
+	testImplementation 'org.springframework.cloud:spring-cloud-stream-test-binder'
+	testImplementation 'org.springframework.kafka:spring-kafka-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+// Fineract dependencies
+	implementation "org.apache.fineract:fineract-avro-schemas:${fineractVersion}"
+}
+
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+
+
