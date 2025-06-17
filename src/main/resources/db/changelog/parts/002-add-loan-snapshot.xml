@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="003-create-loan-snapshot" author="abhi">
+        <createTable tableName="loan_snapshot">
+            <column name="loan_id"          type="BIGINT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="account_no"       type="VARCHAR(100)"/>
+            <column name="client_id"        type="BIGINT"/>
+            <column name="principal"        type="NUMERIC(19,4)"/>
+            <column name="annual_interest"  type="NUMERIC(9,6)"/>
+            <column name="term_frequency"   type="INTEGER"/>
+            <column name="status"           type="VARCHAR(50)"/>
+            <column name="raw_payload"      type="BYTEA"/>
+            <column name="snapshot_at"      type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

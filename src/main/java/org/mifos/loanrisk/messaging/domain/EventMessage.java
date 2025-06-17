@@ -1,13 +1,12 @@
-package org.mifos.loanrisk.domain;
+package org.mifos.loanrisk.messaging.domain;
 
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
-
-import java.time.LocalDateTime;
 
 @Table("event_message")
 @Data
@@ -16,7 +15,7 @@ import java.time.LocalDateTime;
 public class EventMessage {
 
     @Id
-    private Long id;               // SERIAL / identity column
+    private Long id; // SERIAL / identity column
 
     @Column("event_id")
     private Long eventId;
@@ -43,22 +42,16 @@ public class EventMessage {
     private String businessDate;
 
     /** Convenience constructor that omits the auto-generated ID. */
-    public EventMessage(Long eventId,
-                        String type,
-                        String category,
-                        String schema,
-                        String tenantId,
-                        LocalDateTime createdAt,
-                        byte[] payload,
-                        String businessDate) {
+    public EventMessage(Long eventId, String type, String category, String schema, String tenantId, LocalDateTime createdAt, byte[] payload,
+            String businessDate) {
 
-        this.eventId       = eventId;
-        this.type          = type;
-        this.category      = category;
-        this.schema        = schema;
-        this.tenantId      = tenantId;
-        this.createdAt     = createdAt;
-        this.payload       = payload;
-        this.businessDate  = businessDate;
+        this.eventId = eventId;
+        this.type = type;
+        this.category = category;
+        this.schema = schema;
+        this.tenantId = tenantId;
+        this.createdAt = createdAt;
+        this.payload = payload;
+        this.businessDate = businessDate;
     }
 }

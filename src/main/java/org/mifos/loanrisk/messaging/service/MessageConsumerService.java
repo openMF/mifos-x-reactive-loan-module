@@ -1,6 +1,6 @@
-package org.mifos.loanrisk.service;
+package org.mifos.loanrisk.messaging.service;
 
-import org.mifos.loanrisk.event.EventMessageDTO;
+import org.mifos.loanrisk.messaging.event.EventMessageDTO;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

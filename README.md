@@ -9,7 +9,7 @@ dev--> main will be undertaken in a release.
 
 # Setup
 
-- Avro schemas available in local Maven repository  
+- Avro schemas available in local Maven repository
   *(make sure to run `./gradlew publishToMavenLocal` in fineract-avro-schemas of Fineract repo for avro schemas)*
 
 ## Start PostgreSQL via Docker

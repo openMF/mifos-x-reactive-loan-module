@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="001-create-aggregator-table" author="abhinav">
+        <createTable tableName="aggregator">
+
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+
+            <column name="loan_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="tenant_id" type="VARCHAR(100)"/>
+
+            <!-- loan & document -->
+            <column name="loan_status"          type="VARCHAR(20)"/>
+            <column name="bank_stmt_uploaded"   type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="id_doc_uploaded"      type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="kyc_doc_uploaded"     type="BOOLEAN" defaultValueBoolean="false"/>
+
+            <!-- service status -->
+            <column name="credit_bureau_status" type="VARCHAR(20)" defaultValue="PENDING"/>
+            <column name="bank_stmt_status"     type="VARCHAR(20)" defaultValue="PENDING"/>
+            <column name="income_stmt_status"   type="VARCHAR(20)" defaultValue="PENDING"/>
+            <column name="ml_score_status"      type="VARCHAR(20)" defaultValue="PENDING"/>
+
+            <!-- scores -->
+            <column name="credit_bureau_score"  type="NUMERIC(5,2)"/>
+            <column name="bank_stmt_score"      type="NUMERIC(5,2)"/>
+            <column name="income_stmt_score"    type="NUMERIC(5,2)"/>
+            <column name="ml_score"             type="NUMERIC(5,2)"/>
+
+            <!-- aggregated -->
+            <column name="overall_score"        type="NUMERIC(5,2)"/>
+            <column name="risk_grade"           type="VARCHAR(10)"/>
+            <column name="assessment_status"    type="VARCHAR(20)"/>
+            <column name="last_updated"         type="TIMESTAMP"/>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

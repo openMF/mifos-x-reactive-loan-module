@@ -1,11 +1,11 @@
 package org.mifos.loanrisk.utility;
 
-import org.springframework.stereotype.Component;
-
 import java.nio.ByteBuffer;
+import org.springframework.stereotype.Component;
 
 @Component
 public class ByteBufferConvertor {
+
     public byte[] convert(ByteBuffer buffer) {
         byte[] bytes = new byte[buffer.remaining()];
         buffer.get(bytes);
@@ -17,5 +17,3 @@ public class ByteBufferConvertor {
         return ByteBuffer.wrap(buffer);
     }
 }
-
-
