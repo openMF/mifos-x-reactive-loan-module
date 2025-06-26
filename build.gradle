@@ -2,7 +2,72 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.4.5'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id 'com.diffplug.spotless' version '6.25.0'
 }
+
+spotless {
+	format 'misc', {
+		target '**/*.md', '**/*.properties', '**/.gitignore', '**/.openapi-generator-ignore', '**/*.yml', '**/*.xml', '**/**.json', '**/*.sql'
+		targetExclude '**/build/**', '**/bin/**', '**/.settings/**', '**/.idea/**', '**/.gradle/**', '**/gradlew.bat', '**/licenses/**', '**/banner.txt', '.vscode/**', '.profileconfig.json'
+		indentWithSpaces(4)
+		endWithNewline()
+		trimTrailingWhitespace()
+	}
+
+	groovyGradle {
+		target '*.gradle', '**/*.gradle'
+		targetExclude '**/build/**', '/**/build.gradle' // TODO: temporary disabled on build.gradle until someone fix this issue: https://github.com/diffplug/spotless/issues/1807
+		greclipse()
+		indentWithSpaces(4)
+		endWithNewline()
+		trimTrailingWhitespace()
+	}
+
+	lineEndings 'UNIX'
+}
+
+spotless {
+	java {
+		targetExclude '**/build/**', '**/bin/**', '**/out/**'
+		importOrder() //sort imports alphabetically
+		removeUnusedImports()
+		eclipse().configFile "$rootDir/config/fineractdev-formatter.xml"
+		endWithNewline()
+		trimTrailingWhitespace()
+
+		// Enforce style modifier order
+		custom 'Modifier ordering', {
+			def modifierRanking = [
+					public      : 1,
+					protected   : 2,
+					private     : 3,
+					abstract    : 4,
+					default     : 5,
+					static      : 6,
+					final       : 7,
+					transient   : 8,
+					volatile    : 9,
+					synchronized: 10,
+					native      : 11,
+					strictfp    : 12]
+			// Find any instance of multiple modifiers. Lead with a non-word character to avoid
+			// accidental matching against for instance, "an alternative default value"
+			it.replaceAll(/\W(?:public |protected |private |abstract |default |static |final |transient |volatile |synchronized |native |strictfp ){2,}/, {
+				// Do not replace the leading non-word character.  Identify the modifiers
+				it.replaceAll(/(?:public |protected |private |abstract |default |static |final |transient |volatile |synchronized |native |strictfp ){2,}/, {
+					// Sort the modifiers according to the ranking above
+					it.split().sort({ modifierRanking[it] }).join(' ') + ' '
+				}
+				)
+			}
+			)
+		}
+	}
+
+	lineEndings 'UNIX'
+}
+
+
 
 group = 'microservice.loanrisk'
 version = '0.0.1-SNAPSHOT'
@@ -15,7 +80,7 @@ java {
 }
 
 repositories {
-	mavenLocal()
+//	mavenLocal()
 	mavenCentral()
 	maven {
 		url "https://mifos.jfrog.io/artifactory/libs-release-local"
@@ -26,7 +91,7 @@ ext {
 	set('springCloudVersion', "2024.0.1")
 }
 
-ext.fineractVersion = '1.12.0-SNAPSHOT-SNAPSHOT'
+ext.fineractVersion = '0.0.1121-75b2142'
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'

@@ -1,9 +1,10 @@
-package org.mifos.loanrisk.event;
+package org.mifos.loanrisk.messaging.event;
 
 import lombok.Getter;
 
 @Getter
 public class EventMessageDTO {
+
     private final Long eventId;
     private final String type;
     private final String category;
@@ -12,7 +13,8 @@ public class EventMessageDTO {
     private final String payLoad;
     private final String businessDate;
 
-    public EventMessageDTO(Long eventId, String type, String category, String tenantId, String createdAt, String payLoad, String businessDate) {
+    public EventMessageDTO(Long eventId, String type, String category, String tenantId, String createdAt, String payLoad,
+            String businessDate) {
         this.eventId = eventId;
         this.type = type;
         this.category = category;
@@ -24,14 +26,8 @@ public class EventMessageDTO {
 
     @Override
     public String toString() {
-        return "EventMessageDTO{" +
-            "eventId=" + eventId +
-            ", type='" + type + '\'' +
-            ", category='" + category + '\'' +
-            ", tenantId='" + tenantId + '\'' +
-            ", createdAt='" + createdAt + '\'' +
-            ", payLoad='" + payLoad + '\'' +
-            ", businessDate='" + businessDate + '\'' +
-            '}';
+        return "EventMessageDTO{" + "eventId=" + eventId + ", type='" + type + '\'' + ", category='" + category + '\'' + ", tenantId='"
+                + tenantId + '\'' + ", createdAt='" + createdAt + '\'' + ", payLoad='" + payLoad + '\'' + ", businessDate='" + businessDate
+                + '\'' + '}';
     }
 }
