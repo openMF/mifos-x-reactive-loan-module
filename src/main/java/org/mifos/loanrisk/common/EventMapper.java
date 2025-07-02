@@ -40,7 +40,7 @@ public class EventMapper {
             throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         Class<?> payloadClazz = Class.forName(msg.getDataschema());
         Method fromByteBuffer = payloadClazz.getMethod("fromByteBuffer", ByteBuffer.class);
-        Object payload = fromByteBuffer.invoke(null, byteBufferConvertor.convert(msg.getData()));
+        Object payload = fromByteBuffer.invoke(null, msg.getData());
         return payload.toString();
     }
 }

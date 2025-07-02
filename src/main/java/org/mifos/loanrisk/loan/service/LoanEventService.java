@@ -1,5 +1,6 @@
 package org.mifos.loanrisk.loan.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.mifos.loanrisk.common.EventEnvelope;
@@ -15,7 +16,7 @@ public class LoanEventService implements DomainEventService {
     private final Map<LoanEventType, LoanMessageHandler> handlers;
 
     @Override
-    public void handle(EventEnvelope env) {
+    public void handle(EventEnvelope env) throws JsonProcessingException {
         LoanEventType type = LoanEventType.valueOf(env.getType());
         handlers.get(type).handle(env.getPayload());
     }

@@ -105,10 +105,10 @@ public class Aggregator {
         this.lastUpdated = lastUpdated;
     }
 
-    public void LoanCreated(@NonNull LoanAccountDataV1 loan, String tenantId) {
+    public Aggregator(@NonNull LoanAccountDataV1 loan) {
         this.loanId = loan.getId();
-        this.tenantId = tenantId;
-        this.loanStatus = LoanStatus.valueOf(loan.getStatus().getValue());
+        this.tenantId = loan.getClientExternalId();
+        this.loanStatus = LoanStatus.fromInt(loan.getStatus().getId());
         this.bankStmtUploaded = false;
         this.idDocUploaded = false;
         this.kycDocUploaded = false;
@@ -126,9 +126,20 @@ public class Aggregator {
         this.lastUpdated = LocalDateTime.now();
     }
 
-    public void cancel() {
+    public void cancelLoan() {
         this.assessmentStatus = ServiceStatus.CANCELLED;
         this.lastUpdated = LocalDateTime.now();
+        // handleLoanCancellation();
+        // have to implement this method to handle stopping all external services
+        // and setting all statuses to CANCELLED
+    }
+
+    public void updateFromLoan(@NonNull LoanAccountDataV1 loan) {
+        this.loanId = loan.getId();
+        this.tenantId = loan.getClientExternalId();
+        this.loanStatus = LoanStatus.fromInt(loan.getStatus().getId());
+        this.lastUpdated = LocalDateTime.now();
+        reevaluateStatus(); // recompute PENDING status
     }
 
     public void documentArrived(DocumentType dt) {

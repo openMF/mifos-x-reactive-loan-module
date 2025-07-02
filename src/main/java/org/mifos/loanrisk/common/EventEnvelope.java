@@ -8,7 +8,7 @@ public record EventEnvelope(Long id, EventCategory category, String type, JsonNo
     /* convenience helpers */
 
     public boolean isLoan() {
-        return category == EventCategory.LOAN;
+        return category == EventCategory.Loan;
     }
 
     public boolean isDocument() {
