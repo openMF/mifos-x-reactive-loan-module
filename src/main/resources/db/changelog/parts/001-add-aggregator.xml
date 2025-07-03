@@ -18,7 +18,7 @@
             <column name="tenant_id" type="VARCHAR(100)"/>
 
             <!-- loan & document -->
-            <column name="loan_status"          type="VARCHAR(20)"/>
+            <column name="loan_status"          type="VARCHAR(50)"/>
             <column name="bank_stmt_uploaded"   type="BOOLEAN" defaultValueBoolean="false"/>
             <column name="id_doc_uploaded"      type="BOOLEAN" defaultValueBoolean="false"/>
             <column name="kyc_doc_uploaded"     type="BOOLEAN" defaultValueBoolean="false"/>
@@ -37,7 +37,7 @@
 
             <!-- aggregated -->
             <column name="overall_score"        type="NUMERIC(5,2)"/>
-            <column name="risk_grade"           type="VARCHAR(10)"/>
+            <column name="risk_grade"           type="VARCHAR(20)"/>
             <column name="assessment_status"    type="VARCHAR(20)"/>
             <column name="last_updated"         type="TIMESTAMP"/>
         </createTable>

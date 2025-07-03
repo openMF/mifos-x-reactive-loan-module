@@ -12,6 +12,6 @@ class DomainServiceConfig {
 
     @Bean
     Map<EventCategory, DomainEventService> domainServices(LoanEventService loanSvc, DocumentEventService docSvc) {
-        return Map.of(EventCategory.LOAN, loanSvc, EventCategory.DOCUMENT, docSvc);
+        return Map.of(EventCategory.Loan, loanSvc, EventCategory.DOCUMENT, docSvc);
     }
 }

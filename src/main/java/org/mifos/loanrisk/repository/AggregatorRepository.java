@@ -10,4 +10,6 @@ public interface AggregatorRepository extends R2dbcRepository<Aggregator, Long> 
 
     Mono<Aggregator> findByLoanId(Long loanId);
 
+    Mono<Aggregator> findOneByLoanId(Long loanId);
+
 }

@@ -21,4 +21,5 @@
     </changeSet>
     <include file="parts/001-add-aggregator.xml" relativeToChangelogFile="true"/>
     <include file="parts/002-add-loan-snapshot.xml" relativeToChangelogFile="true"/>
+<!--    <include file="parts/003-update-loan-snapshot.xml" relativeToChangelogFile="true"/>-->
 </databaseChangeLog>

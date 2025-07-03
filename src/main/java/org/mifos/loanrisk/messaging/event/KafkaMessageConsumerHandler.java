@@ -2,8 +2,6 @@ package org.mifos.loanrisk.messaging.event;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.avro.MessageV1;
@@ -14,7 +12,6 @@ import org.mifos.loanrisk.messaging.domain.EventMessage;
 import org.mifos.loanrisk.messaging.repository.EventMessageRepository;
 import org.mifos.loanrisk.utility.ByteBufferConvertor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandler;
@@ -24,7 +21,6 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-@Profile("kafka")
 public class KafkaMessageConsumerHandler implements MessageHandler {
 
     @Autowired
@@ -56,7 +52,6 @@ public class KafkaMessageConsumerHandler implements MessageHandler {
     }
 
     private void saveMessage(MessageV1 messagePayload) {
-        LocalDateTime createdAt = LocalDateTime.parse(messagePayload.getCreatedAt(), DateTimeFormatter.ISO_DATE_TIME);
 
         EventMessage message = eventMapper.toEntity(messagePayload);
 
