@@ -1,11 +1,63 @@
 # docker-compose.yml (excerpt)
 version: "3.9"
+
+volumes:
+  pgdata:
+  kafka_data:
+
+
 services:
-  loanrisk_db:
+  # ───────────────── PostgreSQL ─────────────────
+  postgres:
     image: postgres:15-alpine
+    container_name: loanrisk_db
     environment:
-      POSTGRES_DB: loanrisk
       POSTGRES_USER: mifos
       POSTGRES_PASSWORD: password
+      POSTGRES_DB: loanrisk
+    volumes:
+      - pgdata:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mifos -d loanrisk"]
+      interval: 10s
+      retries: 5
+
+  # ───────────────── Kafka 4.0.0 (KRaft) ─────────────────
+  kafka:
+    image: quay.io/strimzi/kafka:0.46.0-kafka-4.0.0
+    command: [
+      "sh", "-c",
+      "./bin/kafka-storage.sh format --standalone -t $$(./bin/kafka-storage.sh random-uuid) -c ./config/server.properties && ./bin/kafka-server-start.sh ./config/server.properties"
+    ]
+    ports:
+      - "9092:9092"
+    environment:
+      LOG_DIR: "/tmp/logs"
+
+  # ───────────────── Reactive Loan Module ─────────────────
+  loan-module:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: loanrisk_service
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_R2DBC_URL: r2dbc:postgresql://postgres:5432/loanrisk
+      SPRING_R2DBC_USERNAME: mifos
+      SPRING_R2DBC_PASSWORD: password
+      SPRING_LIQUIBASE_URL: jdbc:postgresql://postgres:5432/loanrisk
+      SPRING_LIQUIBASE_USER: mifos
+      SPRING_LIQUIBASE_PASSWORD: password
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      retries: 5

@@ -12,14 +12,14 @@ dev--> main will be undertaken in a release.
 - Avro schemas available in local Maven repository
   *(make sure to run `./gradlew publishToMavenLocal` in fineract-avro-schemas of Fineract repo for avro schemas)*
 
-## Start PostgreSQL via Docker
+## Start the application using Docker Compose
 
 ```bash
-docker compose up -d loanrisk_db
+docker compose up --build
 ```
 
 ## Start Mifos X Reactive Loan Risk Assessment Module
 
 ```bash
-./gradlew bootRun --args='--spring.profiles.active=kafka'
+./gradlew bootRun
 ```
