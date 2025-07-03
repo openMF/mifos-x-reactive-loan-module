@@ -1,0 +1,13 @@
+# build bits
+build
+.gradle
+# IDE / editor stuff
+.idea
+.vscode
+*.iml
+# VCS
+.git
+.gitignore
+# OS cruft
+.DS_Store
+Thumbs.db
