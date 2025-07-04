@@ -112,7 +112,7 @@ dependencies {
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.h2database:h2'
-	runtimeOnly    "org.postgresql:r2dbc-postgresql:1.0.4.RELEASE"
+	runtimeOnly    "org.postgresql:r2dbc-postgresql:1.0.7.RELEASE"
 	runtimeOnly    "org.postgresql:postgresql:42.7.7"
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.integration:spring-integration-test'
