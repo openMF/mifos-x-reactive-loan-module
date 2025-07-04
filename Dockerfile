@@ -1,7 +1,7 @@
 # ────────────────────────────────
 # Stage 1  — Build the fat JAR
 # ────────────────────────────────
-FROM gradle:8.13-jdk21 AS builder
+FROM gradle:8.14-jdk21 AS builder
 WORKDIR /app
 COPY . .
 # use the wrapper and skip tests for faster local build
