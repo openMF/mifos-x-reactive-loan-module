@@ -9,7 +9,7 @@ volumes:
 services:
   # ───────────────── PostgreSQL ─────────────────
   postgres:
-    image: postgres:15-alpine
+    image: postgres:17-alpine
     container_name: loanrisk_db
     environment:
       POSTGRES_USER: mifos
