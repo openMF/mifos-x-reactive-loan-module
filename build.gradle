@@ -91,7 +91,7 @@ ext {
 	set('springCloudVersion', "2024.0.1")
 }
 
-ext.fineractVersion = '0.0.1138-9516656'
+ext.fineractVersion = '0.0.1147-1bbd5e4'
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
