@@ -1,19 +1,18 @@
 package org.mifos.loanrisk.loan.service;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mifos.loanrisk.common.EventCategory;
 import org.mifos.loanrisk.common.EventEnvelope;
 import org.mifos.loanrisk.loan.common.LoanEventType;
 import org.mifos.loanrisk.loan.handler.LoanMessageHandler;
-
-import java.util.Map;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 class LoanEventServiceTest {
 
@@ -25,22 +24,19 @@ class LoanEventServiceTest {
 
     @BeforeEach
     void setUp() throws JsonProcessingException {
-        created   = mock(LoanMessageHandler.class);
-        updated   = mock(LoanMessageHandler.class);
+        created = mock(LoanMessageHandler.class);
+        updated = mock(LoanMessageHandler.class);
         withdrawn = mock(LoanMessageHandler.class);
-        rejected  = mock(LoanMessageHandler.class);
+        rejected = mock(LoanMessageHandler.class);
 
         doNothing().when(created).handle(any(JsonNode.class));
         doNothing().when(updated).handle(any(JsonNode.class));
         doNothing().when(withdrawn).handle(any(JsonNode.class));
         doNothing().when(rejected).handle(any(JsonNode.class));
 
-        service = new LoanEventService(Map.of(
-                LoanEventType.LoanCreatedBusinessEvent,              created,
-                LoanEventType.LoanApplicationModifiedBusinessEvent,  updated,
-                LoanEventType.LoanWithdrawnByApplicantBusinessEvent, withdrawn,
-                LoanEventType.LoanRejectedBusinessEvent,             rejected
-        ));
+        service = new LoanEventService(
+                Map.of(LoanEventType.LoanCreatedBusinessEvent, created, LoanEventType.LoanApplicationModifiedBusinessEvent, updated,
+                        LoanEventType.LoanWithdrawnByApplicantBusinessEvent, withdrawn, LoanEventType.LoanRejectedBusinessEvent, rejected));
     }
 
     @Test

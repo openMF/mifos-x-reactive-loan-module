@@ -1,14 +1,14 @@
 package org.mifos.loanrisk.domain;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 import org.apache.fineract.avro.loan.v1.LoanAccountDataV1;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mifos.loanrisk.common.LoanStatus;
 import org.mifos.loanrisk.common.ServiceStatus;
 import org.mifos.loanrisk.document.common.DocumentType;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 class AggregatorTest {
 

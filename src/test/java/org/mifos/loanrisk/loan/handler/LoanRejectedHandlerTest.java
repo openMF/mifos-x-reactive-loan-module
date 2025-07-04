@@ -1,5 +1,7 @@
 package org.mifos.loanrisk.loan.handler;
 
+import static org.mockito.Mockito.*;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -9,8 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.mifos.loanrisk.repository.LoanSnapshotRepository;
 import org.mifos.loanrisk.service.AggregatorService;
 import reactor.core.publisher.Mono;
-
-import static org.mockito.Mockito.*;
 
 class LoanRejectedHandlerTest {
 

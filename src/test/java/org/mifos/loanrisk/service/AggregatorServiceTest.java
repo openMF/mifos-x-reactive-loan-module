@@ -1,19 +1,18 @@
 package org.mifos.loanrisk.service;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 import org.apache.fineract.avro.document.v1.DocumentDataV1;
 import org.apache.fineract.avro.loan.v1.LoanAccountDataV1;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mifos.loanrisk.common.ServiceStatus;
-import org.mifos.loanrisk.document.common.DocumentType;
 import org.mifos.loanrisk.domain.Aggregator;
 import org.mifos.loanrisk.repository.AggregatorRepository;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 class AggregatorServiceTest {
 
