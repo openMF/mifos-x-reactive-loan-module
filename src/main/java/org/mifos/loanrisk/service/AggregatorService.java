@@ -88,15 +88,43 @@ public class AggregatorService {
         /* Fetch, mutate, save */
         return repo.findByLoanId(doc.getParentEntityId())
                 .switchIfEmpty(Mono.error(new IllegalStateException("No Aggregator row for loan " + doc.getParentEntityId())))
-                .flatMap(ag -> mutateAggregator(ag, dt, added)).flatMap(repo::save)
+                .flatMap(ag -> mutateAggregator(ag, dt, added, doc.getId())).flatMap(repo::save)
                 .doOnSuccess(ag -> log.info("Aggregator {} updated: {} {}", ag.getId(), dt, added ? "added" : "removed")).then();
     }
 
-    private Mono<Aggregator> mutateAggregator(Aggregator ag, DocumentType dt, boolean added) {
+    private Mono<Aggregator> mutateAggregator(Aggregator ag, DocumentType dt, boolean added, Long docId) {
         if (added) {
-            ag.documentArrived(dt);
+            switch (dt) {
+                case BANK_STATEMENT -> {
+                    if (ag.getBankStmtId() != null && !ag.getBankStmtId().equals(docId)) {
+                        log.info("Replacing bank statement document {} with {}", ag.getBankStmtId(), docId);
+                    }
+                    ag.documentArrived(dt, docId);
+                }
+                case KYC_DOC -> {
+                    if (ag.getKycDocId() != null && !ag.getKycDocId().equals(docId)) {
+                        log.info("Replacing kyc document {} with {}", ag.getKycDocId(), docId);
+                    }
+                    ag.documentArrived(dt, docId);
+                }
+                case ID_DOC -> {
+                    if (ag.getIdDocId() != null && !ag.getIdDocId().equals(docId)) {
+                        log.info("Replacing id document {} with {}", ag.getIdDocId(), docId);
+                    }
+                    ag.documentArrived(dt, docId);
+                }
+            }
         } else {
-            ag.documentDeleted(dt);
+            boolean isLatest = switch (dt) {
+                case BANK_STATEMENT -> ag.getBankStmtId() != null && ag.getBankStmtId().equals(docId);
+                case KYC_DOC -> ag.getKycDocId() != null && ag.getKycDocId().equals(docId);
+                case ID_DOC -> ag.getIdDocId() != null && ag.getIdDocId().equals(docId);
+            };
+            if (isLatest) {
+                ag.documentDeleted(dt);
+            } else {
+                log.info("document is not the latest one uploaded");
+            }
         }
         return Mono.just(ag);
     }

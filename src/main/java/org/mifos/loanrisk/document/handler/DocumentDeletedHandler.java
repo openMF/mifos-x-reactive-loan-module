@@ -23,9 +23,7 @@ public class DocumentDeletedHandler implements DocumentMessageHandler {
     @Override
     public void handle(JsonNode payload) throws JsonProcessingException {
         DocumentDataV1 documentData = mapper.treeToValue(payload, DocumentDataV1.class);
-        aggregatorService.onDocumentDeleted(documentData)
-                .doOnError(ex -> log.error("DocumentDeleted flow failed", ex))
-                .subscribe();
+        aggregatorService.onDocumentDeleted(documentData).doOnError(ex -> log.error("DocumentDeleted flow failed", ex)).subscribe();
 
     }
 }

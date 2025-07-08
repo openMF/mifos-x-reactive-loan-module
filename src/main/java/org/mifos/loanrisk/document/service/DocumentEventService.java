@@ -1,8 +1,7 @@
 package org.mifos.loanrisk.document.service;
 
-import java.util.Map;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.mifos.loanrisk.common.EventEnvelope;
@@ -21,7 +20,7 @@ public class DocumentEventService implements DomainEventService {
     @Override
     public void handle(EventEnvelope env) throws JsonProcessingException {
         DocumentEventType type;
-        try{
+        try {
             type = DocumentEventType.valueOf(env.getType());
         } catch (IllegalArgumentException ex) {
             log.warn("Unsupported document event type: {}", env.getType());

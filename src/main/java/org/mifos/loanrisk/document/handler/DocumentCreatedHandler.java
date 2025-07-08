@@ -23,9 +23,7 @@ public class DocumentCreatedHandler implements DocumentMessageHandler {
     @Override
     public void handle(JsonNode payload) throws JsonProcessingException {
         DocumentDataV1 documentData = mapper.treeToValue(payload, DocumentDataV1.class);
-        aggregatorService.onDocumentCreated(documentData)
-                .doOnError(ex -> log.error("DocumentCreated flow failed", ex))
-                .subscribe();
+        aggregatorService.onDocumentCreated(documentData).doOnError(ex -> log.error("DocumentCreated flow failed", ex)).subscribe();
 
     }
 }
