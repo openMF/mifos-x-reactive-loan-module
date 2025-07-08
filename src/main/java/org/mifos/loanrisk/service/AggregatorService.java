@@ -71,7 +71,7 @@ public class AggregatorService {
     private Mono<Void> processDocument(DocumentDataV1 doc, boolean added) {
 
         /* Validate parent type */
-        if (!"loan".equalsIgnoreCase(doc.getParentEntityType())) {
+        if (!"loans".equalsIgnoreCase(doc.getParentEntityType())) {
             log.debug("Skipping document id={} (entityType={})", doc.getId(), doc.getParentEntityType());
             return Mono.empty();
         }

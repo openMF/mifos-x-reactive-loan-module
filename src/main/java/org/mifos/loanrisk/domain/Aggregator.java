@@ -144,12 +144,12 @@ public class Aggregator {
 
     public void documentArrived(DocumentType dt) {
         setFlag(dt, true);
-        reevaluateStatus();
+//        reevaluateStatus();
     }
 
     public void documentDeleted(DocumentType dt) {
         setFlag(dt, false);
-        reevaluateStatus();
+//        reevaluateStatus();
     }
 
     private void setFlag(DocumentType dt, boolean present) {
