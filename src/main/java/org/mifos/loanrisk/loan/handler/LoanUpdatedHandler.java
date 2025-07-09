@@ -13,6 +13,7 @@ import org.mifos.loanrisk.loan.common.LoanEventType;
 import org.mifos.loanrisk.repository.LoanSnapshotRepository;
 import org.mifos.loanrisk.service.AggregatorService;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
 
 @Component
@@ -24,12 +25,13 @@ public class LoanUpdatedHandler implements LoanMessageHandler {
     private final AggregatorService aggregatorService;
     private final LoanSnapshotRepository snapshotRepo;
     private final ObjectMapper mapper;
+    private final TransactionalOperator txOperator;
 
     @Override
     public void handle(JsonNode payload) throws JsonProcessingException {
         LoanAccountDataV1 dto = mapper.treeToValue(payload, LoanAccountDataV1.class);
         String jsonText = mapper.writeValueAsString(payload);
-        Mono.when(updateAggregator(dto), updateExistingSnapshot(dto.getId(), jsonText))
+        Mono.when(updateAggregator(dto), updateExistingSnapshot(dto.getId(), jsonText)).as(txOperator::transactional)
                 .doOnError(ex -> log.error("LoanUpdated flow failed for loan {}", dto.getId(), ex)).subscribe();
     }
 

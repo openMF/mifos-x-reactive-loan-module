@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.mifos.loanrisk.domain.LoanSnapshot;
 import org.mifos.loanrisk.repository.LoanSnapshotRepository;
 import org.mifos.loanrisk.service.AggregatorService;
+import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
 
 class LoanUpdatedHandlerTest {
@@ -21,6 +22,7 @@ class LoanUpdatedHandlerTest {
     private AggregatorService service;
     private LoanSnapshotRepository snapshotRepo;
     private ObjectMapper mapper;
+    private TransactionalOperator txOp;
     private LoanUpdatedHandler handler;
     private LoanAccountDataV1 loan;
     private LoanSnapshot snapshot;
@@ -33,7 +35,9 @@ class LoanUpdatedHandlerTest {
         loan = mock(LoanAccountDataV1.class);
         when(loan.getId()).thenReturn(1L);
         snapshot = new LoanSnapshot(1L, "old", LocalDateTime.now().minusDays(1));
-        handler = new LoanUpdatedHandler(service, snapshotRepo, mapper);
+        txOp = mock(TransactionalOperator.class);
+        when(txOp.transactional((Mono<Object>) any())).thenAnswer(inv -> inv.getArgument(0));
+        handler = new LoanUpdatedHandler(service, snapshotRepo, mapper, txOp);
     }
 
     @Test
