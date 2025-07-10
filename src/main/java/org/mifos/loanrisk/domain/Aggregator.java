@@ -35,11 +35,20 @@ public class Aggregator {
     @Column("bank_stmt_uploaded")
     private Boolean bankStmtUploaded;
 
+    @Column("bank_stmt_id")
+    private Long bankStmtId;
+
     @Column("id_doc_uploaded")
     private Boolean idDocUploaded;
 
+    @Column("id_doc_id")
+    private Long idDocId;
+
     @Column("kyc_doc_uploaded")
     private Boolean kycDocUploaded;
+
+    @Column("kyc_doc_id")
+    private Long kycDocId;
 
     /* external-service statuses */
     @Column("credit_bureau_status")
@@ -81,16 +90,20 @@ public class Aggregator {
     private LocalDateTime lastUpdated;
 
     /** Convenience constructor that omits the auto-generated ID. */
-    public Aggregator(@NonNull Long loanId, String tenantId, LoanStatus loanStatus, Boolean bankStmtUploaded, Boolean idDocUploaded,
-            Boolean kycDocUploaded, ServiceStatus creditBureauStatus, ServiceStatus bankStmtStatus, ServiceStatus incomeStmtStatus,
-            ServiceStatus mlScoreStatus, BigDecimal creditBureauScore, BigDecimal bankStmtScore, BigDecimal incomeStmtScore,
-            BigDecimal mlScore, BigDecimal overallScore, String riskGrade, ServiceStatus assessmentStatus, LocalDateTime lastUpdated) {
+    public Aggregator(@NonNull Long loanId, String tenantId, LoanStatus loanStatus, Boolean bankStmtUploaded, Long bankStmtId,
+            Boolean idDocUploaded, Long idDocId, Boolean kycDocUploaded, Long kycDocId, ServiceStatus creditBureauStatus,
+            ServiceStatus bankStmtStatus, ServiceStatus incomeStmtStatus, ServiceStatus mlScoreStatus, BigDecimal creditBureauScore,
+            BigDecimal bankStmtScore, BigDecimal incomeStmtScore, BigDecimal mlScore, BigDecimal overallScore, String riskGrade,
+            ServiceStatus assessmentStatus, LocalDateTime lastUpdated) {
         this.loanId = loanId;
         this.tenantId = tenantId;
         this.loanStatus = loanStatus;
         this.bankStmtUploaded = bankStmtUploaded;
+        this.bankStmtId = bankStmtId;
         this.idDocUploaded = idDocUploaded;
+        this.idDocId = idDocId;
         this.kycDocUploaded = kycDocUploaded;
+        this.kycDocId = kycDocId;
         this.creditBureauStatus = creditBureauStatus;
         this.bankStmtStatus = bankStmtStatus;
         this.incomeStmtStatus = incomeStmtStatus;
@@ -110,8 +123,11 @@ public class Aggregator {
         this.tenantId = loan.getClientExternalId();
         this.loanStatus = LoanStatus.fromInt(loan.getStatus().getId());
         this.bankStmtUploaded = false;
+        this.bankStmtId = null;
         this.idDocUploaded = false;
+        this.idDocId = null;
         this.kycDocUploaded = false;
+        this.kycDocId = null;
         this.creditBureauStatus = ServiceStatus.PENDING;
         this.bankStmtStatus = ServiceStatus.PENDING;
         this.incomeStmtStatus = ServiceStatus.PENDING;
@@ -142,21 +158,30 @@ public class Aggregator {
         reevaluateStatus(); // recompute PENDING status
     }
 
-    public void documentArrived(DocumentType dt) {
-        setFlag(dt, true);
-        reevaluateStatus();
+    public void documentArrived(DocumentType dt, Long documentId) {
+        setFlag(dt, true, documentId);
+        // reevaluateStatus();
     }
 
     public void documentDeleted(DocumentType dt) {
-        setFlag(dt, false);
-        reevaluateStatus();
+        setFlag(dt, false, null);
+        // reevaluateStatus();
     }
 
-    private void setFlag(DocumentType dt, boolean present) {
+    private void setFlag(DocumentType dt, boolean present, Long documentId) {
         switch (dt) {
-            case BANK_STATEMENT -> bankStmtUploaded = present;
-            case ID_DOC -> idDocUploaded = present;
-            case KYC_DOC -> kycDocUploaded = present;
+            case BANK_STATEMENT -> {
+                bankStmtUploaded = present;
+                bankStmtId = present ? documentId : null;
+            }
+            case ID_DOC -> {
+                idDocUploaded = present;
+                idDocId = present ? documentId : null;
+            }
+            case KYC_DOC -> {
+                kycDocUploaded = present;
+                kycDocId = present ? documentId : null;
+            }
         }
     }
 

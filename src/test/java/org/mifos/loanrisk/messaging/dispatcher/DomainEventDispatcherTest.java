@@ -19,7 +19,7 @@ class DomainEventDispatcherTest {
     void setUp() {
         loanService = mock(DomainEventService.class);
         docService = mock(DomainEventService.class);
-        dispatcher = new DomainEventDispatcher(Map.of(EventCategory.Loan, loanService, EventCategory.DOCUMENT, docService));
+        dispatcher = new DomainEventDispatcher(Map.of(EventCategory.Loan, loanService, EventCategory.Document, docService));
     }
 
     @Test

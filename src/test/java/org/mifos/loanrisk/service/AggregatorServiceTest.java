@@ -80,15 +80,57 @@ class AggregatorServiceTest {
     void onDocumentCreatedUpdatesAggregator() {
         Aggregator ag = new Aggregator(loan);
         DocumentDataV1 doc = mock(DocumentDataV1.class, RETURNS_DEEP_STUBS);
-        when(doc.getParentEntityType()).thenReturn("loan");
+        when(doc.getParentEntityType()).thenReturn("loans");
         when(doc.getParentEntityId()).thenReturn(1L);
         when(doc.getName()).thenReturn("bankStatement");
+        when(doc.getId()).thenReturn(10L);
         when(repo.findByLoanId(1L)).thenReturn(Mono.just(ag));
         when(repo.save(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(service.onDocumentCreated(doc)).verifyComplete();
 
         assertTrue(ag.getBankStmtUploaded());
+        assertEquals(10L, ag.getBankStmtId());
         verify(repo).save(ag);
+    }
+
+    @Test
+    void onDocumentDeletedIgnoresOldDocument() {
+        Aggregator ag = new Aggregator(loan);
+        ag.setBankStmtUploaded(true);
+        ag.setBankStmtId(10L);
+
+        DocumentDataV1 doc = mock(DocumentDataV1.class, RETURNS_DEEP_STUBS);
+        when(doc.getParentEntityType()).thenReturn("loans");
+        when(doc.getParentEntityId()).thenReturn(1L);
+        when(doc.getName()).thenReturn("bankStatement");
+        when(doc.getId()).thenReturn(9L);
+        when(repo.findByLoanId(1L)).thenReturn(Mono.just(ag));
+        when(repo.save(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+
+        StepVerifier.create(service.onDocumentDeleted(doc)).verifyComplete();
+
+        assertTrue(ag.getBankStmtUploaded());
+        assertEquals(10L, ag.getBankStmtId());
+    }
+
+    @Test
+    void onDocumentDeletedRemovesLatestDocument() {
+        Aggregator ag = new Aggregator(loan);
+        ag.setBankStmtUploaded(true);
+        ag.setBankStmtId(10L);
+
+        DocumentDataV1 doc = mock(DocumentDataV1.class, RETURNS_DEEP_STUBS);
+        when(doc.getParentEntityType()).thenReturn("loans");
+        when(doc.getParentEntityId()).thenReturn(1L);
+        when(doc.getName()).thenReturn("bankStatement");
+        when(doc.getId()).thenReturn(10L);
+        when(repo.findByLoanId(1L)).thenReturn(Mono.just(ag));
+        when(repo.save(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+
+        StepVerifier.create(service.onDocumentDeleted(doc)).verifyComplete();
+
+        assertFalse(ag.getBankStmtUploaded());
+        assertNull(ag.getBankStmtId());
     }
 }

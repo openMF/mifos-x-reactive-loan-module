@@ -12,7 +12,7 @@ public record EventEnvelope(Long id, EventCategory category, String type, JsonNo
     }
 
     public boolean isDocument() {
-        return category == EventCategory.DOCUMENT;
+        return category == EventCategory.Document;
     }
 
     public String getCategory() {
