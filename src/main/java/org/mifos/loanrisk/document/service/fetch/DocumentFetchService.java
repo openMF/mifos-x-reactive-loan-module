@@ -24,7 +24,7 @@ public class DocumentFetchService {
     private final TransactionalOperator txOperator;
 
     public Mono<DocumentMeta> fetch(String entityType, Long entityId, Long documentId) {
-        String path = "/api/v1/%s/%d/documents/%d/attachment".formatted(entityType, entityId, documentId);
+        String path = "/%s/%d/documents/%d/attachment".formatted(entityType, entityId, documentId);
         return fineractClient.get().uri(path).retrieve().toEntity(byte[].class)
                 .flatMap(resp -> {
                     String mime = resp.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE);
