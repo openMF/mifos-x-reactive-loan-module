@@ -9,6 +9,7 @@ import org.apache.fineract.avro.document.v1.DocumentDataV1;
 import org.mifos.loanrisk.document.common.DocumentEventType;
 import org.mifos.loanrisk.document.common.Handles;
 import org.mifos.loanrisk.service.AggregatorService;
+import org.mifos.loanrisk.document.service.fetch.DocumentFetchService;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -18,12 +19,16 @@ import org.springframework.stereotype.Component;
 public class DocumentCreatedHandler implements DocumentMessageHandler {
 
     private final AggregatorService aggregatorService;
+    private final DocumentFetchService documentFetchService;
     private final ObjectMapper mapper;
 
     @Override
     public void handle(JsonNode payload) throws JsonProcessingException {
         DocumentDataV1 documentData = mapper.treeToValue(payload, DocumentDataV1.class);
-        aggregatorService.onDocumentCreated(documentData).doOnError(ex -> log.error("DocumentCreated flow failed", ex)).subscribe();
+        aggregatorService.onDocumentCreated(documentData)
+                .then(documentFetchService.fetch(documentData.getParentEntityType(),
+                        documentData.getParentEntityId(), documentData.getId()))
+                .doOnError(ex -> log.error("DocumentCreated flow failed", ex)).subscribe();
 
     }
 }

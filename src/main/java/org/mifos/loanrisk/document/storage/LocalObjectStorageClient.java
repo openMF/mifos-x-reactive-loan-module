@@ -15,7 +15,7 @@ import reactor.core.scheduler.Schedulers;
 @Slf4j
 public class LocalObjectStorageClient implements ObjectStorageClient {
 
-    @Value("${app.document.storage.path:documents}")
+    @Value("${app.document.storage.path:.documents}")
     private String basePath;
 
     private Path path(String key) {
