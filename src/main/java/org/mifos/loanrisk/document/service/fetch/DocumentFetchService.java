@@ -25,21 +25,15 @@ public class DocumentFetchService {
 
     public Mono<DocumentMeta> fetch(String entityType, Long entityId, Long documentId) {
         String path = "/%s/%d/documents/%d/attachment".formatted(entityType, entityId, documentId);
-        return fineractClient.get().uri(path).retrieve().toEntity(byte[].class)
-                .flatMap(resp -> {
-                    String mime = resp.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE);
-                    String key = "%s-%d".formatted(entityType, documentId);
-                    DocumentMeta meta = new DocumentMeta(null, entityId, documentId, key, mime,
-                            DocumentStatus.NEW, LocalDateTime.now());
-                    return storageClient.put(resp.getBody(), key)
-                            .then(repository.save(meta))
-                            .as(txOperator::transactional);
-                });
+        return fineractClient.get().uri(path).retrieve().toEntity(byte[].class).flatMap(resp -> {
+            String mime = resp.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE);
+            String key = "%s-%d".formatted(entityType, documentId);
+            DocumentMeta meta = new DocumentMeta(null, entityId, documentId, key, mime, DocumentStatus.NEW, LocalDateTime.now());
+            return storageClient.put(resp.getBody(), key).then(repository.save(meta)).as(txOperator::transactional);
+        });
     }
 
     private Mono<Void> persistDocument(DocumentMeta meta) {
-        return repository.save(meta)
-                .doOnSuccess(saved -> log.info("Document metadata saved: {}", saved))
-                .then();
+        return repository.save(meta).doOnSuccess(saved -> log.info("Document metadata saved: {}", saved)).then();
     }
 }

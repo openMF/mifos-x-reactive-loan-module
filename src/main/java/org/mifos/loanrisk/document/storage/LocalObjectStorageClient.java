@@ -36,7 +36,6 @@ public class LocalObjectStorageClient implements ObjectStorageClient {
 
     @Override
     public Mono<byte[]> get(String key) {
-        return Mono.fromCallable(() -> Files.readAllBytes(path(key)))
-                .subscribeOn(Schedulers.boundedElastic());
+        return Mono.fromCallable(() -> Files.readAllBytes(path(key))).subscribeOn(Schedulers.boundedElastic());
     }
 }
