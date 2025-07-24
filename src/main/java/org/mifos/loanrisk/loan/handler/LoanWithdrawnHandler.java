@@ -11,6 +11,7 @@ import org.mifos.loanrisk.loan.common.LoanEventType;
 import org.mifos.loanrisk.repository.LoanSnapshotRepository;
 import org.mifos.loanrisk.service.AggregatorService;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
 
 @Component
@@ -22,12 +23,14 @@ public class LoanWithdrawnHandler implements LoanMessageHandler {
     private final AggregatorService aggregatorService;
     private final LoanSnapshotRepository snapshotRepo;
     private final ObjectMapper mapper;
+    private final TransactionalOperator txOperator;
 
     @Override
     public void handle(JsonNode payload) throws JsonProcessingException {
         LoanAccountDataV1 dto = mapper.treeToValue(payload, LoanAccountDataV1.class);
         Mono.when(aggregatorService.onLoanWithdrawn(dto),
                 snapshotRepo.deleteByLoanId(dto.getId()).doOnSuccess(v -> log.info("Snapshot deleted loan={}", dto.getId())))
-                .doOnError(ex -> log.error("LoanWithdrawn flow failed for loan {}", dto.getId(), ex)).subscribe();
+                .as(txOperator::transactional).doOnError(ex -> log.error("LoanWithdrawn flow failed for loan {}", dto.getId(), ex))
+                .subscribe();
     }
 }

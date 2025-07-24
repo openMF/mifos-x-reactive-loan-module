@@ -88,8 +88,7 @@ public class AggregatorService {
         /* Fetch, mutate, save */
         return repo.findByLoanId(doc.getParentEntityId())
                 .switchIfEmpty(Mono.error(new IllegalStateException("No Aggregator row for loan " + doc.getParentEntityId())))
-                .flatMap(ag -> mutateAggregator(ag, dt, added, doc.getId())).flatMap(repo::save)
-                .doOnSuccess(ag -> log.info("Aggregator {} updated: {} {}", ag.getId(), dt, added ? "added" : "removed")).then();
+                .flatMap(ag -> mutateAggregator(ag, dt, added, doc.getId())).flatMap(repo::save).then();
     }
 
     private Mono<Aggregator> mutateAggregator(Aggregator ag, DocumentType dt, boolean added, Long docId) {
@@ -114,6 +113,7 @@ public class AggregatorService {
                     ag.documentArrived(dt, docId);
                 }
             }
+            log.info("Aggregator {} updated with new document {} of type {}", ag.getId(), docId, dt);
         } else {
             boolean isLatest = switch (dt) {
                 case BANK_STATEMENT -> ag.getBankStmtId() != null && ag.getBankStmtId().equals(docId);
@@ -122,6 +122,7 @@ public class AggregatorService {
             };
             if (isLatest) {
                 ag.documentDeleted(dt);
+                log.info("Aggregator {} removed document {} of type {}", ag.getId(), docId, dt);
             } else {
                 log.info("document is not the latest one uploaded");
             }

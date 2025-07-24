@@ -33,7 +33,21 @@ public class EventMapper {
         LocalDateTime ts = LocalDateTime.parse(dto.getCreatedAt(), DateTimeFormatter.ISO_DATE_TIME);
         return new EventMessage(dto.getId(), dto.getType(), dto.getCategory(), dto.getDataschema(), dto.getTenantId(), ts,
                 byteBufferConvertor.convert(dto.getData()), // keep raw bytes
-                dto.getBusinessDate());
+                dto.getBusinessDate(), Boolean.FALSE);
+    }
+
+    public EventEnvelope toEnvelope(EventMessage msg) throws JsonProcessingException, ClassNotFoundException, InvocationTargetException,
+            NoSuchMethodException, IllegalAccessException {
+        return new EventEnvelope(msg.getEventId(), EventCategory.valueOf(msg.getCategory()), msg.getType(), om.readTree(convertMsg(msg)),
+                msg.getTenantId(), msg.getCreatedAt(), msg.getBusinessDate());
+    }
+
+    private String convertMsg(EventMessage msg)
+            throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        Class<?> payloadClazz = Class.forName(msg.getSchema());
+        Method fromByteBuffer = payloadClazz.getMethod("fromByteBuffer", ByteBuffer.class);
+        Object payload = fromByteBuffer.invoke(null, ByteBuffer.wrap(msg.getPayload()));
+        return payload.toString();
     }
 
     private String convertMsg(MessageV1 msg)

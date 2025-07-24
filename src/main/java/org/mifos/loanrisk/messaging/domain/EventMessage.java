@@ -41,9 +41,12 @@ public class EventMessage {
     @Column("business_date")
     private String businessDate;
 
+    @Column("is_processed")
+    private Boolean processed;
+
     /** Convenience constructor that omits the auto-generated ID. */
     public EventMessage(Long eventId, String type, String category, String schema, String tenantId, LocalDateTime createdAt, byte[] payload,
-            String businessDate) {
+            String businessDate, Boolean processed) {
 
         this.eventId = eventId;
         this.type = type;
@@ -53,5 +56,6 @@ public class EventMessage {
         this.createdAt = createdAt;
         this.payload = payload;
         this.businessDate = businessDate;
+        this.processed = processed;
     }
 }

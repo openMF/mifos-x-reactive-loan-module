@@ -35,12 +35,10 @@ class AggregatorServiceTest {
         when(repo.existsByLoanId(1L)).thenReturn(Mono.just(false));
         when(repo.save(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
-        StepVerifier.create(service.onLoanCreated(loan))
-                .assertNext(ag -> {
-                    assertEquals(1L, ag.getLoanId());
-                    assertEquals(ServiceStatus.PENDING, ag.getAssessmentStatus());
-                })
-                .verifyComplete();
+        StepVerifier.create(service.onLoanCreated(loan)).assertNext(ag -> {
+            assertEquals(1L, ag.getLoanId());
+            assertEquals(ServiceStatus.PENDING, ag.getAssessmentStatus());
+        }).verifyComplete();
 
         verify(repo).save(any(Aggregator.class));
     }
