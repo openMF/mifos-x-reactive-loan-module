@@ -30,6 +30,10 @@ public class AggregatorService {
         });
     }
 
+    public Mono<Aggregator> getByLoanId(Long loanId) {
+        return repo.findByLoanId(loanId);
+    }
+
     public Mono<Void> onLoanUpdated(LoanAccountDataV1 loan) {
         return repo.findByLoanId(loan.getId())
                 .switchIfEmpty(Mono.error(new IllegalStateException("No Aggregator row for loan " + loan.getId()))).flatMap(ag -> {
