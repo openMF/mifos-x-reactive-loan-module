@@ -155,7 +155,6 @@ public class Aggregator {
         this.tenantId = loan.getClientExternalId();
         this.loanStatus = LoanStatus.fromInt(loan.getStatus().getId());
         this.lastUpdated = LocalDateTime.now();
-        reevaluateStatus(); // recompute PENDING status
     }
 
     public void documentArrived(DocumentType dt, Long documentId) {
