@@ -24,5 +24,6 @@
     <include file="parts/003-add-aggregator-doc-ids.xml" relativeToChangelogFile="true"/>
     <include file="parts/004-add-event-message-processed.xml" relativeToChangelogFile="true"/>
     <include file="parts/005-add-document-meta.xml" relativeToChangelogFile="true"/>
+    <include file="parts/006-add-bank-statement-analysis-result.xml" relativeToChangelogFile="true"/>
 <!--    <include file="parts/003-update-loan-snapshot.xml" relativeToChangelogFile="true"/>-->
 </databaseChangeLog>

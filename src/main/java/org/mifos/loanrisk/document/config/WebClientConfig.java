@@ -15,6 +15,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.util.unit.DataSize;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
 
@@ -32,9 +34,13 @@ public class WebClientConfig {
             http = http.secure(spec -> spec.sslContext(ssl));
         }
 
+        ExchangeStrategies strategies = ExchangeStrategies.builder()
+                .codecs(c -> c.defaultCodecs().maxInMemorySize((int) p.getMaxInMemorySize().toBytes())).build();
+
         return WebClient.builder().baseUrl(p.getBaseUrl()).defaultHeader("Fineract-Platform-TenantId", p.getTenantId())
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .defaultHeaders(h -> h.setBasicAuth(p.getUsername(), p.getPassword())).clientConnector(new ReactorClientHttpConnector(http))
+                .defaultHeaders(h -> h.setBasicAuth(p.getUsername(), p.getPassword())).exchangeStrategies(strategies)
+                .clientConnector(new ReactorClientHttpConnector(http))
                 .build();
     }
 
@@ -48,6 +54,7 @@ public class WebClientConfig {
         private String password;
         private Duration connectTimeout = Duration.ofSeconds(5);
         private Duration readTimeout = Duration.ofSeconds(10);
+        private DataSize maxInMemorySize = DataSize.ofMegabytes(10);
         private Ssl ssl = new Ssl();
 
         @Data
