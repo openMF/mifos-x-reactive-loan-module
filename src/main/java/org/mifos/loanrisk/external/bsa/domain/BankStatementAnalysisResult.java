@@ -1,5 +1,6 @@
 package org.mifos.loanrisk.external.bsa.domain;
 
+import io.r2dbc.postgresql.codec.Json;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,5 +21,5 @@ public class BankStatementAnalysisResult {
     private Long loanId;
 
     @Column("attributes")
-    private String attributes;
+    private Json attributes;
 }

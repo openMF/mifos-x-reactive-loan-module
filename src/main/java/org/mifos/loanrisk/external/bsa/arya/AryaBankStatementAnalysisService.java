@@ -4,6 +4,7 @@ import java.util.Base64;
 import java.util.UUID;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.r2dbc.postgresql.codec.Json;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.avro.document.v1.DocumentDataV1;
@@ -74,7 +75,7 @@ public class AryaBankStatementAnalysisService implements BankStatementAnalysisSe
     private Mono<BankStatementAnalysisResult> saveResult(AryaBsaResponse resp, Aggregator aggregator) {
         try {
             String json = mapper.writeValueAsString(resp);
-            BankStatementAnalysisResult result = new BankStatementAnalysisResult(null, aggregator.getLoanId(), json);
+            BankStatementAnalysisResult result = new BankStatementAnalysisResult(null, aggregator.getLoanId(), Json.of(json));
             return resultRepository.save(result);
         } catch (JsonProcessingException e) {
             return Mono.error(e);
