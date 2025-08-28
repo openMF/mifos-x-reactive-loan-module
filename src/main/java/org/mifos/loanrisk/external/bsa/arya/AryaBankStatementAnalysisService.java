@@ -2,6 +2,9 @@ package org.mifos.loanrisk.external.bsa.arya;
 
 import java.util.Base64;
 import java.util.UUID;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.r2dbc.postgresql.codec.Json;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.fineract.avro.document.v1.DocumentDataV1;
@@ -11,10 +14,10 @@ import org.mifos.loanrisk.document.domain.DocumentMeta;
 import org.mifos.loanrisk.document.service.fetch.DocumentFetchService;
 import org.mifos.loanrisk.document.storage.ObjectStorageClient;
 import org.mifos.loanrisk.external.bsa.BankStatementAnalysisService;
-import org.mifos.loanrisk.external.bsa.event.BsaRequestedEvent;
+import org.mifos.loanrisk.external.bsa.domain.BankStatementAnalysisResult;
+import org.mifos.loanrisk.external.bsa.repository.BankStatementAnalysisResultRepository;
 import org.mifos.loanrisk.repository.AggregatorRepository;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -31,7 +34,8 @@ public class AryaBankStatementAnalysisService implements BankStatementAnalysisSe
     private final DocumentFetchService documentFetchService;
     private final ObjectStorageClient storageClient;
     private final AggregatorRepository aggregatorRepository;
-    private final ApplicationEventPublisher eventPublisher;
+    private final BankStatementAnalysisResultRepository resultRepository;
+    private final ObjectMapper mapper;
     private final WebClient.Builder webClientBuilder;
 
     @Value("${bsa.arya.base-url:https://ping.arya.ai/api/v1}")
@@ -63,10 +67,19 @@ public class AryaBankStatementAnalysisService implements BankStatementAnalysisSe
                 .bodyValue(body)
                 .retrieve()
                 .bodyToMono(AryaBsaResponse.class)
-                .doOnNext(resp -> eventPublisher
-                        .publishEvent(new BsaRequestedEvent(this, aggregator.getLoanId(), document.getId(), reqId)))
+                .flatMap(resp -> saveResult(resp, aggregator))
                 .doOnError(err -> log.error("Arya BSA request failed", err))
                 .then(updateAggregatorStatus(aggregator));
+    }
+
+    private Mono<BankStatementAnalysisResult> saveResult(AryaBsaResponse resp, Aggregator aggregator) {
+        try {
+            String json = mapper.writeValueAsString(resp);
+            BankStatementAnalysisResult result = new BankStatementAnalysisResult(null, aggregator.getLoanId(), Json.of(json));
+            return resultRepository.save(result);
+        } catch (JsonProcessingException e) {
+            return Mono.error(e);
+        }
     }
 
     private Mono<Void> updateAggregatorStatus(Aggregator aggregator) {
