@@ -1,5 +1,6 @@
 package org.mifos.loanrisk.document.service.fetch;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +26,10 @@ public class DocumentFetchService {
 
     public Mono<DocumentMeta> fetch(String entityType, Long entityId, Long documentId) {
         String path = "/%s/%d/documents/%d/attachment".formatted(entityType, entityId, documentId);
-        return fineractClient.get().uri(path).retrieve().toEntity(byte[].class).flatMap(resp -> {
+        return fineractClient.get().uri(path).retrieve().toEntity(byte[].class)
+                .timeout(Duration.ofSeconds(5))
+                .retry(1)
+                .flatMap(resp -> {
             String mime = resp.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE);
             String key = "%s-%d".formatted(entityType, documentId);
             DocumentMeta meta = new DocumentMeta(null, entityId, documentId, key, mime, DocumentStatus.NEW, LocalDateTime.now());

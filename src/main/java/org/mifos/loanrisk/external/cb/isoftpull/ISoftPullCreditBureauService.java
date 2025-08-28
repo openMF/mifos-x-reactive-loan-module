@@ -50,7 +50,7 @@ public class ISoftPullCreditBureauService implements CreditBureauService {
 
     private Mono<Void> sendRequest(ISoftPullRequest body, Aggregator aggregator) {
         WebClient client = webClientBuilder.baseUrl(baseUrl).build();
-        return client.post().uri("/softpull")
+        return client.post().uri("/reports")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("api-key", apiKey)
                 .header("api-secret", apiSecret)

@@ -3,11 +3,14 @@ package org.mifos.loanrisk.external.cb.isoftpull;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
+import java.util.Map.Entry;
 import lombok.RequiredArgsConstructor;
 import org.mifos.loanrisk.domain.LoanSnapshot;
 import org.mifos.loanrisk.fineract.FineractClientService;
 import org.mifos.loanrisk.repository.LoanSnapshotRepository;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
@@ -35,32 +38,36 @@ public class ISoftPullRequestMapper {
                 return Mono.error(new IllegalStateException("Client ID not found in loan snapshot for loan " + snapshot.getLoanId()));
             }
 
-            Mono<JsonNode> detailsMono = fineractClientService.fetchClientDetails(clientId);
-            Mono<JsonNode> addressMono = fineractClientService.fetchClientAddress(clientId);
-            Mono<JsonNode> identifiersMono = fineractClientService.fetchClientIdentifiers(clientId);
-            Mono<JsonNode> ssnMono = identifiersMono.flatMap(ids -> {
-                JsonNode first = ids.isArray() && ids.size() > 0 ? ids.get(0) : null;
-                if (first == null || first.get("id") == null) {
-                    return Mono.error(new IllegalStateException("No identifier found for client " + clientId));
-                }
-                Long identifierId = first.get("id").asLong();
-                return fineractClientService.fetchClientSsn(clientId, identifierId);
-            });
+            Mono<Entry<String, JsonNode>> detailsMono = fineractClientService.fetchClientDetails(clientId)
+                    .map(j -> Map.entry("details", j));
+            Mono<Entry<String, JsonNode>> addressMono = fineractClientService.fetchClientAddress(clientId)
+                    .map(j -> Map.entry("address", j));
+            Mono<Entry<String, JsonNode>> identifiersMono = fineractClientService.fetchClientIdentifiers(clientId)
+                    .map(j -> Map.entry("identifiers", j));
 
-            return Mono.zip(detailsMono, addressMono, ssnMono)
-                    .map(tuple -> {
-                        JsonNode details = tuple.getT1();
-                        JsonNode address = tuple.getT2();
-                        JsonNode ssn = tuple.getT3();
+            return Flux.mergeDelayError(2, detailsMono, addressMono, identifiersMono)
+                    .collectMap(Entry::getKey, Entry::getValue)
+                    .flatMap(map -> {
+                        JsonNode ids = map.get("identifiers");
+                        JsonNode first = ids.isArray() && ids.size() > 0 ? ids.get(0) : null;
+                        if (first == null || first.get("id") == null) {
+                            return Mono.error(new IllegalStateException("No identifier found for client " + clientId));
+                        }
+                        Long identifierId = first.get("id").asLong();
+                        return fineractClientService.fetchClientSsn(clientId, identifierId)
+                                .map(ssn -> {
+                                    JsonNode details = map.get("details");
+                                    JsonNode address = map.get("address");
 
-                        String firstName = text(details, "firstName", "firstname");
-                        String lastName = text(details, "lastName", "lastname");
-                        String addr = text(address, "address", "addressLine1", "street");
-                        String city = text(address, "city", "town");
-                        String state = text(address, "state", "stateProvince");
-                        String zip = text(address, "zip", "postalCode", "zipcode");
-                        String ssnNumber = text(ssn, "documentKey", "ssn", "ssnNumber");
-                        return new ISoftPullRequest(firstName, lastName, addr, city, state, zip, ssnNumber);
+                                    String firstName = text(details, "firstName", "firstname");
+                                    String lastName = text(details, "lastName", "lastname");
+                                    String addr = text(address, "address", "addressLine1", "street");
+                                    String city = text(address, "city", "town");
+                                    String state = text(address, "state", "stateProvince");
+                                    String zip = text(address, "zip", "postalCode", "zipcode");
+                                    String ssnNumber = text(ssn, "documentKey", "ssn", "ssnNumber");
+                                    return new ISoftPullRequest(firstName, lastName, addr, city, state, zip, ssnNumber);
+                                });
                     });
         } catch (JsonProcessingException e) {
             return Mono.error(new RuntimeException("Failed to parse loan snapshot payload", e));

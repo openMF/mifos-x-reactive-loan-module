@@ -1,6 +1,7 @@
 package org.mifos.loanrisk.fineract;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import java.time.Duration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -25,7 +26,9 @@ public class FineractClientService {
         return fineractClient.get()
                 .uri("/clients/{clientId}", clientId)
                 .retrieve()
-                .bodyToMono(JsonNode.class);
+                .bodyToMono(JsonNode.class)
+                .timeout(Duration.ofSeconds(5))
+                .retry(1);
     }
 
     /**
@@ -38,7 +41,9 @@ public class FineractClientService {
         return fineractClient.get()
                 .uri("/clients/{clientId}/identifiers", clientId)
                 .retrieve()
-                .bodyToMono(JsonNode.class);
+                .bodyToMono(JsonNode.class)
+                .timeout(Duration.ofSeconds(5))
+                .retry(1);
     }
 
     /**
@@ -52,7 +57,9 @@ public class FineractClientService {
         return fineractClient.get()
                 .uri("/clients/{clientId}/identifiers/{identifierId}", clientId, identifierId)
                 .retrieve()
-                .bodyToMono(JsonNode.class);
+                .bodyToMono(JsonNode.class)
+                .timeout(Duration.ofSeconds(5))
+                .retry(1);
     }
 
     /**
@@ -65,7 +72,9 @@ public class FineractClientService {
         return fineractClient.get()
                 .uri("/client/{clientId}/addresses?type=804", clientId)
                 .retrieve()
-                .bodyToMono(JsonNode.class);
+                .bodyToMono(JsonNode.class)
+                .timeout(Duration.ofSeconds(5))
+                .retry(1);
     }
 }
 
