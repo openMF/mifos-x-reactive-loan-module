@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.mifos.loanrisk.domain.LoanSnapshot;
+import org.mifos.loanrisk.fineract.FineractClientService;
 import org.mifos.loanrisk.repository.LoanSnapshotRepository;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -17,27 +18,44 @@ import reactor.core.publisher.Mono;
 public class ISoftPullRequestMapper {
 
     private final LoanSnapshotRepository loanSnapshotRepository;
+    private final FineractClientService fineractClientService;
     private final ObjectMapper mapper;
 
     public Mono<ISoftPullRequest> map(Long loanId) {
         return loanSnapshotRepository.findByLoanId(loanId)
                 .switchIfEmpty(Mono.error(new IllegalStateException("Loan snapshot not found for loan " + loanId)))
-                .map(this::fromSnapshot);
+                .flatMap(this::fromSnapshot);
     }
 
-    private ISoftPullRequest fromSnapshot(LoanSnapshot snapshot) {
+    private Mono<ISoftPullRequest> fromSnapshot(LoanSnapshot snapshot) {
         try {
             JsonNode root = mapper.readTree(snapshot.getPayload());
-            String firstName = text(root, "firstName", "firstname");
-            String lastName = text(root, "lastName", "lastname");
-            String address = text(root, "address", "addressLine1", "street");
-            String city = text(root, "city", "town");
-            String state = text(root, "state", "stateProvince");
-            String zip = text(root, "zip", "postalCode", "zipcode");
-            String ssn = text(root, "ssn", "ssnNumber");
-            return new ISoftPullRequest(firstName, lastName, address, city, state, zip, ssn);
+            Long clientId = longValue(root, "clientId", "clientid");
+            if (clientId == null) {
+                return Mono.error(new IllegalStateException("Client ID not found in loan snapshot for loan " + snapshot.getLoanId()));
+            }
+
+            Mono<JsonNode> detailsMono = fineractClientService.fetchClientDetails(clientId);
+            Mono<JsonNode> addressMono = fineractClientService.fetchClientAddress(clientId);
+            Mono<JsonNode> ssnMono = fineractClientService.fetchClientSsn(clientId);
+
+            return Mono.zip(detailsMono, addressMono, ssnMono)
+                    .map(tuple -> {
+                        JsonNode details = tuple.getT1();
+                        JsonNode address = tuple.getT2();
+                        JsonNode ssn = tuple.getT3();
+
+                        String firstName = text(details, "firstName", "firstname");
+                        String lastName = text(details, "lastName", "lastname");
+                        String addr = text(address, "address", "addressLine1", "street");
+                        String city = text(address, "city", "town");
+                        String state = text(address, "state", "stateProvince");
+                        String zip = text(address, "zip", "postalCode", "zipcode");
+                        String ssnNumber = text(ssn, "documentKey", "ssn", "ssnNumber");
+                        return new ISoftPullRequest(firstName, lastName, addr, city, state, zip, ssnNumber);
+                    });
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to parse loan snapshot payload", e);
+            return Mono.error(new RuntimeException("Failed to parse loan snapshot payload", e));
         }
     }
 
@@ -49,6 +67,22 @@ public class ISoftPullRequestMapper {
             }
         }
         return "";
+    }
+
+    private Long longValue(JsonNode root, String... fields) {
+        for (String f : fields) {
+            JsonNode node = root.findValue(f);
+            if (node != null && !node.isMissingNode() && !node.isNull()) {
+                if (node.isNumber()) {
+                    return node.asLong();
+                }
+                try {
+                    return Long.parseLong(node.asText());
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
+        return null;
     }
 }
 
