@@ -13,6 +13,8 @@ import org.mifos.loanrisk.common.ServiceStatus;
 import org.mifos.loanrisk.service.AggregatorService;
 import org.mifos.loanrisk.external.bsa.BankStatementAnalysisService;
 import org.mifos.loanrisk.external.bsa.BankStatementAnalysisServiceFactory;
+import org.mifos.loanrisk.external.cb.CreditBureauService;
+import org.mifos.loanrisk.external.cb.CreditBureauServiceFactory;
 import reactor.core.publisher.Mono;
 import org.springframework.stereotype.Component;
 
@@ -24,6 +26,7 @@ public class DocumentCreatedHandler implements DocumentMessageHandler {
 
     private final AggregatorService aggregatorService;
     private final BankStatementAnalysisServiceFactory bsaFactory;
+    private final CreditBureauServiceFactory cbFactory;
     private final ObjectMapper mapper;
 
     @Override
@@ -46,14 +49,23 @@ public class DocumentCreatedHandler implements DocumentMessageHandler {
 
         return aggregatorService.getByLoanId(documentData.getParentEntityId())
                 .flatMap(ag -> {
-                    // Bank statement analysis requirements
+                    Mono<Void> bsaMono = Mono.empty();
+                    Mono<Void> cbMono = Mono.empty();
+
                     if (ag.getLoanStatus() == LoanStatus.SUBMITTED_AND_PENDING_APPROVAL
                             && Boolean.TRUE.equals(ag.getBankStmtUploaded())
                             && ag.getBankStmtStatus() == ServiceStatus.PENDING) {
                         BankStatementAnalysisService svc = bsaFactory.getService();
-                        return svc.analyze(documentData, ag);
+                        bsaMono = svc.analyze(documentData, ag);
                     }
-                    return Mono.empty();
+
+                    if (ag.getLoanStatus() == LoanStatus.SUBMITTED_AND_PENDING_APPROVAL
+                            && ag.getCreditBureauStatus() == ServiceStatus.PENDING) {
+                        CreditBureauService cbSvc = cbFactory.getService();
+                        cbMono = cbSvc.pull(ag);
+                    }
+
+                    return Mono.when(bsaMono, cbMono);
                 });
     }
 }
