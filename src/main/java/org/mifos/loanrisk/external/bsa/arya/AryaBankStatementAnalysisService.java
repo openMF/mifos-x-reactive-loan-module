@@ -66,20 +66,15 @@ public class AryaBankStatementAnalysisService implements BankStatementAnalysisSe
                 .header("token", token)
                 .bodyValue(body)
                 .retrieve()
-                .bodyToMono(AryaBsaResponse.class)
+                .bodyToMono(String.class)
                 .flatMap(resp -> saveResult(resp, aggregator))
                 .doOnError(err -> log.error("Arya BSA request failed", err))
                 .then(updateAggregatorStatus(aggregator));
     }
 
-    private Mono<BankStatementAnalysisResult> saveResult(AryaBsaResponse resp, Aggregator aggregator) {
-        try {
-            String json = mapper.writeValueAsString(resp);
-            BankStatementAnalysisResult result = new BankStatementAnalysisResult(null, aggregator.getLoanId(), Json.of(json));
+    private Mono<BankStatementAnalysisResult> saveResult(String resp, Aggregator aggregator) {
+            BankStatementAnalysisResult result = new BankStatementAnalysisResult(null, aggregator.getLoanId(), Json.of(resp));
             return resultRepository.save(result);
-        } catch (JsonProcessingException e) {
-            return Mono.error(e);
-        }
     }
 
     private Mono<Void> updateAggregatorStatus(Aggregator aggregator) {
