@@ -70,7 +70,7 @@ public class FineractClientService {
      */
     public Mono<JsonNode> fetchClientAddress(Long clientId) {
         return fineractClient.get()
-                .uri("/client/{clientId}/addresses?type=804", clientId)
+                .uri("/client/{clientId}/addresses", clientId)
                 .retrieve()
                 .bodyToMono(JsonNode.class)
                 .timeout(Duration.ofSeconds(5))

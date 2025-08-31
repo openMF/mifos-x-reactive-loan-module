@@ -41,7 +41,10 @@ public class ISoftPullRequestMapper {
             Mono<Entry<String, JsonNode>> detailsMono = fineractClientService.fetchClientDetails(clientId)
                     .map(j -> Map.entry("details", j));
             Mono<Entry<String, JsonNode>> addressMono = fineractClientService.fetchClientAddress(clientId)
-                    .map(j -> Map.entry("address", j));
+                    .map(j -> {
+                        JsonNode firstAddress = j.isArray() && j.size() > 0 ? j.get(0) : j;
+                        return Map.entry("address", firstAddress);
+                    });
             Mono<Entry<String, JsonNode>> identifiersMono = fineractClientService.fetchClientIdentifiers(clientId)
                     .map(j -> Map.entry("identifiers", j));
 
@@ -63,7 +66,7 @@ public class ISoftPullRequestMapper {
                                     String lastName = text(details, "lastName", "lastname");
                                     String addr = text(address, "address", "addressLine1", "street");
                                     String city = text(address, "city", "town");
-                                    String state = text(address, "state", "stateProvince");
+                                    String state = text(address, "state", "stateProvince", "stateName");
                                     String zip = text(address, "zip", "postalCode", "zipcode");
                                     String ssnNumber = text(ssn, "documentKey", "ssn", "ssnNumber");
                                     return new ISoftPullRequest(firstName, lastName, addr, city, state, zip, ssnNumber);
