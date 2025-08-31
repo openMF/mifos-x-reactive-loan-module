@@ -1,7 +1,5 @@
 package org.mifos.loanrisk.external.cb.isoftpull;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.r2dbc.postgresql.codec.Json;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +23,6 @@ public class ISoftPullCreditBureauService implements CreditBureauService {
     private final CreditBureauResultRepository resultRepository;
     private final AggregatorRepository aggregatorRepository;
     private final WebClient.Builder webClientBuilder;
-    private final ObjectMapper mapper;
     private final ISoftPullRequestMapper requestMapper;
 
     @Value("${cb.isoftpull.base-url:https://api.isoftpull.com}")
@@ -56,20 +53,15 @@ public class ISoftPullCreditBureauService implements CreditBureauService {
                 .header("api-secret", apiSecret)
                 .bodyValue(body)
                 .retrieve()
-                .bodyToMono(ISoftPullResponse.class)
+                .bodyToMono(String.class)
                 .flatMap(resp -> saveResult(resp, aggregator))
                 .doOnError(err -> log.error("iSoftPull request failed", err))
                 .then(updateAggregatorStatus(aggregator));
     }
 
-    private Mono<CreditBureauResult> saveResult(ISoftPullResponse resp, Aggregator aggregator) {
-        try {
-            String json = mapper.writeValueAsString(resp);
-            CreditBureauResult result = new CreditBureauResult(null, aggregator.getLoanId(), Json.of(json));
-            return resultRepository.save(result);
-        } catch (JsonProcessingException e) {
-            return Mono.error(e);
-        }
+    private Mono<CreditBureauResult> saveResult(String resp, Aggregator aggregator) {
+        CreditBureauResult result = new CreditBureauResult(null, aggregator.getLoanId(), Json.of(resp));
+        return resultRepository.save(result);
     }
 
     private Mono<Void> updateAggregatorStatus(Aggregator aggregator) {
