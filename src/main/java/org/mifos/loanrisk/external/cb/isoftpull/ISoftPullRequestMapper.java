@@ -37,7 +37,15 @@ public class ISoftPullRequestMapper {
 
             Mono<JsonNode> detailsMono = fineractClientService.fetchClientDetails(clientId);
             Mono<JsonNode> addressMono = fineractClientService.fetchClientAddress(clientId);
-            Mono<JsonNode> ssnMono = fineractClientService.fetchClientSsn(clientId);
+            Mono<JsonNode> identifiersMono = fineractClientService.fetchClientIdentifiers(clientId);
+            Mono<JsonNode> ssnMono = identifiersMono.flatMap(ids -> {
+                JsonNode first = ids.isArray() && ids.size() > 0 ? ids.get(0) : null;
+                if (first == null || first.get("id") == null) {
+                    return Mono.error(new IllegalStateException("No identifier found for client " + clientId));
+                }
+                Long identifierId = first.get("id").asLong();
+                return fineractClientService.fetchClientSsn(clientId, identifierId);
+            });
 
             return Mono.zip(detailsMono, addressMono, ssnMono)
                     .map(tuple -> {

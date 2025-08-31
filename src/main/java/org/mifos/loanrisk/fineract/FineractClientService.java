@@ -29,14 +29,28 @@ public class FineractClientService {
     }
 
     /**
+     * List all identifiers associated with a client.
+     *
+     * @param clientId the Fineract client identifier
+     * @return array of identifier objects as JSON
+     */
+    public Mono<JsonNode> fetchClientIdentifiers(Long clientId) {
+        return fineractClient.get()
+                .uri("/clients/{clientId}/identifiers", clientId)
+                .retrieve()
+                .bodyToMono(JsonNode.class);
+    }
+
+    /**
      * Fetch the client's SSN/identifier information.
      *
      * @param clientId the Fineract client identifier
+     * @param identifierId the identifier id returned from {@link #fetchClientIdentifiers(Long)}
      * @return identifier details as a JSON object
      */
-    public Mono<JsonNode> fetchClientSsn(Long clientId) {
+    public Mono<JsonNode> fetchClientSsn(Long clientId, Long identifierId) {
         return fineractClient.get()
-                .uri("/clients/{clientId}/identifiers/1", clientId)
+                .uri("/clients/{clientId}/identifiers/{identifierId}", clientId, identifierId)
                 .retrieve()
                 .bodyToMono(JsonNode.class);
     }
