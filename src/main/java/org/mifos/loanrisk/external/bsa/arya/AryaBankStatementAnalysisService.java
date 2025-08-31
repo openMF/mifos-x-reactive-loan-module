@@ -2,8 +2,8 @@ package org.mifos.loanrisk.external.bsa.arya;
 
 import java.util.Base64;
 import java.util.UUID;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.r2dbc.postgresql.codec.Json;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -66,15 +66,27 @@ public class AryaBankStatementAnalysisService implements BankStatementAnalysisSe
                 .header("token", token)
                 .bodyValue(body)
                 .retrieve()
-                .bodyToMono(String.class)
+                .bodyToMono(AryaBsaResponse.class)
                 .flatMap(resp -> saveResult(resp, aggregator))
                 .doOnError(err -> log.error("Arya BSA request failed", err))
                 .then(updateAggregatorStatus(aggregator));
     }
 
-    private Mono<BankStatementAnalysisResult> saveResult(String resp, Aggregator aggregator) {
-            BankStatementAnalysisResult result = new BankStatementAnalysisResult(null, aggregator.getLoanId(), Json.of(resp));
-            return resultRepository.save(result);
+    private Mono<BankStatementAnalysisResult> saveResult(AryaBsaResponse resp, Aggregator aggregator) {
+        String reportKey = "bsa/report-" + resp.reqId() + ".pdf";
+        byte[] pdf = Base64.getDecoder().decode(resp.data());
+        return storageClient.put(pdf, reportKey)
+                .then(Mono.fromCallable(() -> {
+                    ObjectNode node = mapper.createObjectNode();
+                    node.put("req_id", resp.reqId());
+                    node.put("success", resp.success());
+                    if (resp.errorMessage() != null) {
+                        node.put("error_message", resp.errorMessage());
+                    }
+                    node.put("reportKey", reportKey);
+                    return new BankStatementAnalysisResult(null, aggregator.getLoanId(), Json.of(node.toString()));
+                }))
+                .flatMap(resultRepository::save);
     }
 
     private Mono<Void> updateAggregatorStatus(Aggregator aggregator) {
