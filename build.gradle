@@ -88,7 +88,7 @@ repositories {
 }
 
 ext {
-	set('springCloudVersion', "2025.0.0")
+	set('springCloudVersion', "2025.1.2")
 }
 
 ext.fineractVersion = '0.0.1517-682222f'
