@@ -10,11 +10,11 @@ RUN ./gradlew clean bootJar -x test --no-daemon
 # ────────────────────────────────
 # Stage 2  — Runtime image
 # ────────────────────────────────
-FROM openjdk:21-jdk-slim
+FROM azul/zulu-openjdk-alpine:21-jre-headless
 WORKDIR /opt/app
 
-# non-root user for better security
-RUN useradd -ms /bin/bash loanuser
+# non-root user for better security (Alpine/busybox: adduser, not useradd)
+RUN adduser -D -s /bin/sh loanuser
 USER loanuser
 
 COPY --from=builder /app/build/libs/*.jar app.jar
