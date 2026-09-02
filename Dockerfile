@@ -10,7 +10,7 @@ RUN ./gradlew clean bootJar -x test --no-daemon
 # ────────────────────────────────
 # Stage 2  — Runtime image
 # ────────────────────────────────
-FROM azul/zulu-openjdk-alpine:21-jre-headless
+FROM azul/zulu-openjdk-alpine:25-jre-headless
 WORKDIR /opt/app
 
 # non-root user for better security (Alpine/busybox: adduser, not useradd)
